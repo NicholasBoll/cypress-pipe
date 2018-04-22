@@ -1,0 +1,33 @@
+{
+  "name": "cypress-pipe",
+  "version": "1.0.0",
+  "description": "Create custom commands using plain-old functions",
+  "main": "index.js",
+  "scripts": {
+    "test": "cypress run"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NicholasBoll/cypress-pipe.git"
+  },
+  "keywords": [
+    "cypress",
+    "pipe",
+    "custom",
+    "compose",
+    "command"
+  ],
+  "files": [
+    "index.js",
+    "index.d.ts"
+  ],
+  "author": "Nicholas Boll",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/NicholasBoll/cypress-pipe/issues"
+  },
+  "homepage": "https://github.com/NicholasBoll/cypress-pipe#readme",
+  "devDependencies": {
+    "cypress": "^2.1.0"
+  }
+}
