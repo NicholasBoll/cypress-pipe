@@ -1,5 +1,3 @@
-let utilsLog
-
 describe('pipe()', () => {
 
   context('when function resolves synchronously', () => {
@@ -28,7 +26,7 @@ describe('pipe()', () => {
 
     it('should allow retry of a transform that will eventually resolve', () => {
       const obj = { foo: 'bar' }
-      setTimeout(() => { obj.foo = 'baz' }, 3000)
+      setTimeout(() => { obj.foo = 'baz' }, 500) // make this higher if you want to see the UI during this process
       cy.wrap(obj)
         .pipe(subject => subject.foo)
         .should('equal', 'baz')
@@ -36,10 +34,14 @@ describe('pipe()', () => {
   
     it('should allow a timeout', (done) => {
       const obj = { foo: 'bar' }
-      setTimeout(() => { obj.foo = 'baz' }, 2000)
+      setTimeout(() => { obj.foo = 'baz' }, 1000)
       cy.wrap(obj)
-        .pipe(subject => subject.foo, { timeout: 1000 })
+        .pipe(subject => subject.foo, { timeout: 50 })
         .should('equal', 'baz')
+        .then(s => {
+          // we should not get here
+          done(new Error('Failed to fail on timeout'))
+        })
       
       cy.on('fail', (err) => {
         expect(err.message).to.include('Timed out retrying')
@@ -72,5 +74,4 @@ describe('pipe()', () => {
         .pipe(getFoo) // command log should show 'getFoo'
     })
   })
-
 })

@@ -1,28 +1,40 @@
 /// <reference types="cypress" />
 
-Cypress.Commands.add('pipe', { prevSubject: true }, (subject, fn, options = {}) => {
+Cypress.Commands.add('pipe', { prevSubject: true }, (subject, fn, options = { log: true }) => {
 
-  const log = Cypress.log({
-    message: fn.name || undefined,
-  })
   const now = performance.now()
+  if (options.log) {
+    options._log = Cypress.log({
+      message: fn.name || undefined,
+    })
+  }
+
+  Cypress._.defaults(options, {
+    timeout: 4000
+  })
+
+  const remoteSubject = cy.getRemotejQueryInstance(subject)
+  if (remoteSubject && options._log) {
+    options._log.set('$el', remoteSubject)
+    options._log.snapshot('before', { next: 'after' })
+  }
 
   const getValue = () => {
-    const remoteSubject = cy.getRemotejQueryInstance(subject)
-
     const actualSubject = remoteSubject || subject
 
     const value = fn(actualSubject)
     const actualValue = cy.isCy(value) ? actualSubject : value
 
-    log.set('consoleProps', () => ({
-      Command: 'pipe',
-      Subject: subject,
-      Message: fn.name || undefined,
-      Function: fn,
-      Returned: actualValue,
-      Duration: performance.now() - now,
-    }))
+    if (options._log) {
+      options._log.set('consoleProps', () => ({
+        Command: 'pipe',
+        Subject: subject,
+        Message: fn.name || undefined,
+        Function: fn,
+        Returned: actualValue,
+        Duration: performance.now() - now,
+      }))
+    }
 
     return actualValue
   }
@@ -39,6 +51,13 @@ Cypress.Commands.add('pipe', { prevSubject: true }, (subject, fn, options = {}) 
       cy.verifyUpcomingAssertions(value, options, {
         onRetry: resolveValue,
       }),
-    ).finally(() => { log.end() })
+    ).finally(() => {
+      if (options._log) {
+        if (remoteSubject) {
+          options._log.snapshot()
+        }
+        options._log.end()
+      }
+    })
   return resolveValue()
 })

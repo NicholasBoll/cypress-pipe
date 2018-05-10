@@ -20,4 +20,3 @@ import './commands'
 // require('./commands')
 
 import '../../'
-import 'babel-polyfill'

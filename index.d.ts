@@ -15,11 +15,11 @@ declare namespace Cypress {
      */
     pipe<S>(
       fn: (this: { [key: string]: any }, currentSubject: Subject) => Chainable<S>,
-      options?: Partial<{ timeout: number }>,
+      options?: Partial<Cypress.Timeoutable & Cypress.Loggable>,
     ): Chainable<S>
     pipe<S extends object | any[] | string | number | boolean>(
       fn: (this: { [key: string]: any }, currentSubject: Subject) => S,
-      options?: Partial<{ timeout: number }>,
+      options?: Partial<Cypress.Timeoutable & Cypress.Loggable>,
     ): Chainable<S>
   }
 }
