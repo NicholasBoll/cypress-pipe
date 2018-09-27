@@ -1,14 +1,18 @@
+/// <reference types="cypress" />
+/// <reference path="../../index.d.ts" />
+
+const delay = 100 // delay of some retries. Make this larger if you want to see the UI during these times
+
 describe('pipe()', () => {
 
-  context('when function resolves synchronously', () => {
+  context('when passed a synchronous function', () => {
     it('should allow transforming a subject', () => {
       cy.wrap({ foo: 'bar' })
         .pipe(subject => subject.foo)
         .should('equal', 'bar')
-      
     })
 
-    it('should show the name of a function in the Command Log', (done) => {
+    it('should show the function name in the Command Log', (done) => {
       const getFoo = subject => subject.foo
       cy.on('log:added', (attrs, log) => {
         if (log.get('name') === 'pipe') {
@@ -20,21 +24,30 @@ describe('pipe()', () => {
           done()
         }
       })
+
       cy.wrap({ foo: 'bar' })
-        .pipe(getFoo) // command log should show 'getFoo'
+        .pipe(getFoo)
     })
 
-    it('should allow retry of a transform that will eventually resolve', () => {
+    it('should retry until assertion passes', () => {
       const obj = { foo: 'bar' }
-      setTimeout(() => { obj.foo = 'baz' }, 500) // make this higher if you want to see the UI during this process
+      setTimeout(() => { obj.foo = 'baz' }, delay)
       cy.wrap(obj)
         .pipe(subject => subject.foo)
         .should('equal', 'baz')
     })
+
+    it('should retry until errors are no longer thrown', () => {
+      const obj = {}
+      setTimeout(() => { obj.foo = { bar: 'baz' } }, delay)
+      cy.wrap(obj)
+        .pipe(subject => subject.foo.bar)
+        .should('equal', 'baz')
+    })
   
-    it('should allow a timeout', (done) => {
+    it('should allow for a specified timeout', (done) => {
       const obj = { foo: 'bar' }
-      setTimeout(() => { obj.foo = 'baz' }, 1000)
+      setTimeout(() => { obj.foo = 'baz' }, delay)
       cy.wrap(obj)
         .pipe(subject => subject.foo, { timeout: 50 })
         .should('equal', 'baz')
@@ -49,16 +62,58 @@ describe('pipe()', () => {
         done()
       })
     })
+
+    context('when visiting a page', () => {
+      const getFirst = $el => $el.find('#first')
+      const getSecond = $el => $el.find('#second')
+      const getText = $el => $el.text()
+
+      beforeEach(() => {
+        cy.visit('/')
+      })
+  
+      it('should have the correct element in the Command Log', () => {
+        let firstLog
+        cy.on('log:added', (attrs, log) => {
+          if (log.get('name') === 'pipe') {
+            cy.removeAllListeners('log:added')
+
+            firstLog = log
+          }
+        })
+
+        cy.get('body')
+          .pipe(getFirst)
+          .should(() => {
+            const consoleProps = firstLog.invoke('consoleProps')
+
+            expect(consoleProps).to.have.property('Elements', 1)
+            expect(consoleProps.Yielded).to.have.id('first')
+          })
+      })
+
+      it('should wait to continue for each step and resolve the chain with the correct value', () => {
+        cy.get('body')
+          .pipe(getFirst)
+          .pipe(getSecond) // Will resolve after a delay
+          .pipe(getText)
+          .should('equal', 'foobar')
+      })
+
+      it('should create snapshots', () => {
+
+      })
+    })
   })
 
-  context('when function uses cy commands', () => {
-    it('should allow transforming a subject using cy commands', () => {
+  context('when passed a function that uses cy commands', () => {
+    it('should allow transforming a subject', () => {
       cy.wrap({ foo: 'bar' })
         .pipe(subject => cy.wrap(subject.foo))
         .should('equal', 'bar')
     })
 
-    it('should show the name of a function in the Command Log', (done) => {
+    it('should show the function name in the Command Log', (done) => {
       const getFoo = subject => cy.wrap(subject.foo)
       cy.on('log:added', (attrs, log) => {
         if (log.get('name') === 'pipe') {
@@ -72,6 +127,46 @@ describe('pipe()', () => {
       })
       cy.wrap({ foo: 'bar' })
         .pipe(getFoo) // command log should show 'getFoo'
+    })
+
+    context('when visiting a page', () => {
+      beforeEach(() => {
+        cy.visit('/')
+      })
+
+      it('should have the correct element in the Command Log', () => {
+        let firstLog
+        cy.on('log:added', (attrs, log) => {
+          if (log.get('name') === 'pipe') {
+            cy.removeAllListeners('log:added')
+
+            firstLog = log
+          }
+        })
+  
+        const getFirst = $el => cy.wrap($el).find('#first')
+
+        cy.get('body')
+          .pipe(getFirst)
+          .should(() => {
+            const consoleProps = firstLog.invoke('consoleProps')
+
+            expect(consoleProps).to.have.property('Elements', 1)
+            expect(consoleProps.Yielded).to.have.id('first')
+          })
+      })
+
+      it('should wait to continue for each step and resolve the chain with the correct value', () => {
+        const getFirst = $el => cy.wrap($el).find('#first')
+        const getSecond = $el => cy.wrap($el).find('#second')
+        const getText = $el => $el.text()
+
+        cy.get('body')
+          .pipe(getFirst)
+          .pipe(getSecond) // Will resolve after a delay
+          .pipe(getText)
+          .should('equal', 'foobar')
+      })
     })
   })
 })
