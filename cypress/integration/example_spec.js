@@ -113,7 +113,11 @@ describe('pipe()', () => {
         cy.get('body')
           .pipe(getFirst)
           .then($el => {
-            expect(lastLog.get('snapshots')).to.have.length(1)
+            const snapshots = lastLog.get('snapshots')
+            // snapshots only exist when running the GUI
+            if (snapshots) {
+              expect(lastLog.get('snapshots')).to.have.length(1)
+            }
           })
       })
     })
@@ -192,9 +196,13 @@ describe('pipe()', () => {
         cy.get('body')
           .pipe(getFirst)
           .then($el => {
-            expect(lastLog.get('snapshots')).to.have.length(2)
-            expect(lastLog.get('snapshots')[0]).to.have.property('name', 'before')
-            expect(lastLog.get('snapshots')[1]).to.have.property('name', 'after')
+            const snapshots = lastLog.get('snapshots')
+            // snapshots only exist when running the GUI
+            if (snapshots) {
+              expect(lastLog.get('snapshots')).to.have.length(2)
+              expect(lastLog.get('snapshots')[0]).to.have.property('name', 'before')
+              expect(lastLog.get('snapshots')[1]).to.have.property('name', 'after')
+            }
           })
       })
     })
