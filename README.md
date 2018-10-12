@@ -53,6 +53,23 @@ cy.get('body')
   .should('have.id', 'first')
 ```
 
+### Use cy commands for actions
+`pipe` detects the use of Cypress commands and assumes side effects. It will take a 'before' and 'after' snapshots. 'before' is taken before any code is run. 'after' is taken at the end after the function is complete. For action helpers, this makes for a nice before/after snapshots. `pipe` doesn't prevent logging of Cypress commands from within a function (which can be confusing). If Cypress supports [Command Log Grouping](https://github.com/cypress-io/cypress/issues/1260), `pipe` could invoke to have perfect logging.
+
+```ts
+const submitForm = $el => cy.wrap($el).find('#submit').click()
+
+cy.get('form')
+  .pipe(submitForm) // has before/after of submitting form
+
+// Command Log:
+// GET        <form>
+//  -PIPE     submitForm
+//  -WRAP     <form>
+//  -FIND     #submit
+//  -CLICK
+```
+
 ### Name functions
 Don't use anonymous functions and pick short and descriptive function names. The Command Log can be used as a tool for mapping the contents of a test to the screenshot/video. This is useful when finding out which step the test failed on.
 
