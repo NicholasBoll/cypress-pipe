@@ -73,19 +73,19 @@ describe('pipe()', () => {
       })
   
       it('should have the correct element in the Command Log', () => {
-        let firstLog
+        let lastLog
         cy.on('log:added', (attrs, log) => {
           if (log.get('name') === 'pipe') {
             cy.removeAllListeners('log:added')
 
-            firstLog = log
+            lastLog = log
           }
         })
 
         cy.get('body')
           .pipe(getFirst)
           .should(() => {
-            const consoleProps = firstLog.invoke('consoleProps')
+            const consoleProps = lastLog.invoke('consoleProps')
 
             expect(consoleProps).to.have.property('Elements', 1)
             expect(consoleProps.Yielded).to.have.id('first')
@@ -100,8 +100,21 @@ describe('pipe()', () => {
           .should('equal', 'foobar')
       })
 
-      it('should create snapshots', () => {
+      it('should create a snapshot', () => {
+        let lastLog
+        cy.on('log:added', (attrs, log) => {
+          if (log.get('name') === 'pipe') {
+            cy.removeAllListeners('log:added')
 
+            lastLog = log
+          }
+        })
+
+        cy.get('body')
+          .pipe(getFirst)
+          .then($el => {
+            expect(lastLog.get('snapshots')).to.have.length(1)
+          })
       })
     })
   })
@@ -130,6 +143,10 @@ describe('pipe()', () => {
     })
 
     context('when visiting a page', () => {
+      const getFirst = $el => cy.wrap($el).find('#first')
+      const getSecond = $el => cy.wrap($el).find('#second')
+      const getText = $el => $el.text()
+
       beforeEach(() => {
         cy.visit('/')
       })
@@ -143,8 +160,6 @@ describe('pipe()', () => {
             firstLog = log
           }
         })
-  
-        const getFirst = $el => cy.wrap($el).find('#first')
 
         cy.get('body')
           .pipe(getFirst)
@@ -157,15 +172,30 @@ describe('pipe()', () => {
       })
 
       it('should wait to continue for each step and resolve the chain with the correct value', () => {
-        const getFirst = $el => cy.wrap($el).find('#first')
-        const getSecond = $el => cy.wrap($el).find('#second')
-        const getText = $el => $el.text()
-
         cy.get('body')
           .pipe(getFirst)
           .pipe(getSecond) // Will resolve after a delay
           .pipe(getText)
           .should('equal', 'foobar')
+      })
+
+      it('should create "before" and "after" snapshots', () => {
+        let lastLog
+        cy.on('log:added', (attrs, log) => {
+          if (log.get('name') === 'pipe') {
+            cy.removeAllListeners('log:added')
+
+            lastLog = log
+          }
+        })
+
+        cy.get('body')
+          .pipe(getFirst)
+          .then($el => {
+            expect(lastLog.get('snapshots')).to.have.length(2)
+            expect(lastLog.get('snapshots')[0]).to.have.property('name', 'before')
+            expect(lastLog.get('snapshots')[1]).to.have.property('name', 'after')
+          })
       })
     })
   })
