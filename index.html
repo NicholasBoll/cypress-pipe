@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+  <meta charset="utf-8">
+  <title>Test Cypress Pipe</title>
+  <style>
+    #first {
+      width: 200px;
+      height: 200px;
+      background: red;
+    }
+
+    #second {
+      width: 120px;
+      height: 120px;
+      background: pink;
+    }
+
+    #third {
+      width: 70px;
+      height: 70px;
+      background: white;
+    }
+  </style>
+</head>
+<body>
+  <div id="first"></div>
+  <button id="remove" type="button">Remove</button>
+  <script>
+    var delay = 1000
+    // create asynchronous loading of elements
+    setTimeout(() => {
+      document.querySelector('#first').innerHTML = '<div id="second"></div>'
+
+      setTimeout(() => {
+        document.querySelector('#second').innerHTML = '<div id="third"></div>'
+
+        setTimeout(() => {
+          document.querySelector('#third').innerHTML = 'foobar'
+        }, delay)
+      }, delay)
+    }, delay)
+
+    document.querySelector('#remove').addEventListener('click', () => {
+      document.body.removeChild(document.querySelector('#first'))
+    })
+  </script>
+</body>
+</html>

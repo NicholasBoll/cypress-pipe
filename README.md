@@ -3,7 +3,10 @@
 
 `cy.pipe` works very similarly to `cy.then` except for a few key differences:
 * `pipe` will try to document the function name in the Command log (only works on named functions)
-* If the function passed to `pipe` resolves synchronously (doesn't contain Cypress commands) AND is followed by a `cy.should`, the function will be retried until the assertion passes or times out (most Cypress commands do this)
+* `pipe` will create DOM snapshots to aid in debugging
+* If the function passed to `pipe` resolves synchronously (doesn't contain Cypress commands)
+  - AND returns a jQuery element, `pipe` will retry until the jQuery element list is not empty (most Cypress commands do this)
+  - AND is followed by a `cy.should`, the function will be retried until the assertion passes or times out (most Cypress commands do this)
 
 ```ts
 const obj = { foo: 'bar' }
@@ -28,6 +31,46 @@ If the `pipe` was using a `then`, it would fail immediately and wouldn't show th
 This library is a proof of concept, but should be stable. The proposal can be found here: https://github.com/cypress-io/cypress/issues/1548
 
 ## Best Practices
+
+### Use synchronous functions when possible
+Synchronous functions can be retried, async functions cannot. Retrying allows implicit waiting which avoids confusing flaky failures where tests are dependant on timing.
+
+```ts
+// okay
+// The `cy.*` command inside the function prevents automatic retries. The following will actually fail if `#first` isn't immediately available in the DOM
+const getFirst = $el => cy.wrap($el).find('#first')
+
+cy.get('body')
+  .pipe(getFirst)
+  .should('have.id', 'first')
+
+// best
+// synchronous resolution - pipe will retry `getFirst` until it returns a non-empty jQuery element list
+const getFirst = $el => $el.find('#first')
+
+cy.get('body')
+  .pipe(getFirst)
+  .should('have.id', 'first')
+```
+
+### Use cy commands for actions
+`pipe` detects the use of Cypress commands and assumes side effects. It will take a 'before' and 'after' snapshots. 'before' is taken before any code is run. 'after' is taken at the end after the function is complete. For action helpers, this makes for a nice before/after snapshots. `pipe` doesn't prevent logging of Cypress commands from within a function (which can be confusing). If Cypress supports [Command Log Grouping](https://github.com/cypress-io/cypress/issues/1260), `pipe` could invoke to have perfect logging.
+
+```ts
+const submitForm = $el => cy.wrap($el).find('#submit').click()
+
+cy.get('form')
+  .pipe(submitForm) // has before/after of submitting form
+
+// Command Log:
+// GET        <form>
+//  -PIPE     submitForm
+//  -WRAP     <form>
+//  -FIND     #submit
+//  -CLICK
+```
+
+### Name functions
 Don't use anonymous functions and pick short and descriptive function names. The Command Log can be used as a tool for mapping the contents of a test to the screenshot/video. This is useful when finding out which step the test failed on.
 
 ```ts
@@ -52,6 +95,23 @@ cy.wrap({ foo: 'bar' })
 //  -PIPE     getFoo
 //  - ASSERT  expected 'bar' to equal 'bar'
 ```
+
+If you have a function that returns another function (curried for extra input), name that.
+```ts
+// Name the returned curried function
+const getProp = key => function getFoo(s) {
+  return s[key]
+}
+
+cy.wrap({ foo: 'bar' })
+  .pipe(getProp('foo'))
+  .should('equal', 'bar')
+
+// Command Log:
+// WRAP       {foo: bar}
+//  -PIPE     getProp
+//  - ASSERT  expected 'bar' to equal 'bar'
+
 
 ## Installation
 ```
