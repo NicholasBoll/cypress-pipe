@@ -111,6 +111,7 @@ cy.wrap({ foo: 'bar' })
 // WRAP       {foo: bar}
 //  -PIPE     getProp
 //  - ASSERT  expected 'bar' to equal 'bar'
+```
 
 
 ## Installation
