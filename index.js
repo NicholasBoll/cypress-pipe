@@ -18,12 +18,15 @@ const getElements = $el => {
 
 Cypress.Commands.add('pipe', { prevSubject: true }, (subject, fn, options = { log: true }) => {
 
+  const getEl = (value) => isJquery(value) ? value : isJquery(subject) ? subject : undefined
+
   const now = performance.now()
   let isCy = false
 
   if (options.log) {
     options._log = Cypress.log({
       message: fn.name || undefined,
+      $el: getEl(subject), // start the $el with the subject
     })
   }
 
@@ -49,13 +52,23 @@ Cypress.Commands.add('pipe', { prevSubject: true }, (subject, fn, options = { lo
 
     if (options._log) {
       if (isCy) {
+        // If a Cypress command was detected, handle snapshots here
         options._log.snapshot('before', { next: 'after' })
         value.then((val) => {
+          // Set the element to the value for the second snapshot
+          options._log.set({
+            $el: getEl(val),
+            consoleProps: getConsoleProps(val)
+          })
+
           options._log.snapshot()
-          options._log.set('consoleProps', getConsoleProps(val))
         })
       } else {
-        options._log.set('consoleProps', getConsoleProps(actualValue))
+        // If Cypress is not detected, snapshot at the very end
+        options._log.set({
+          $el: getEl(value),
+          consoleProps: getConsoleProps(value)
+        })
       }
     }
 
@@ -79,7 +92,8 @@ Cypress.Commands.add('pipe', { prevSubject: true }, (subject, fn, options = { lo
 
   return resolveValue().then((value) => {
     if (options._log) {
-      if (!isCy && isJquery(value)) {
+      if (!isCy) {
+        // For pure functions, this is the only safe place to snapshot (guaranteed only happens once)
         options._log.snapshot()
       }
       options._log.end()
