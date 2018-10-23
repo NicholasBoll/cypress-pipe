@@ -74,14 +74,28 @@ describe('pipe()', () => {
   
       it('should have the correct element in the Command Log', () => {
         let lastLog
+
         cy.on('log:added', (attrs, log) => {
           if (log.get('name') === 'pipe') {
-            cy.removeAllListeners('log:added')
-
             lastLog = log
           }
         })
 
+        cy.get('body')
+          .pipe(getFirst)
+          .should(() => {
+            expect(lastLog.get('$el')).to.have.attr('id', 'first')
+          })
+      })
+
+      it('should have the correct consoleProps', () => {
+        let lastLog
+        cy.on('log:added', (attrs, log) => {
+          if (log.get('name') === 'pipe') {
+            lastLog = log
+          }
+        })
+        
         cy.get('body')
           .pipe(getFirst)
           .should(() => {
@@ -156,25 +170,46 @@ describe('pipe()', () => {
       })
 
       it('should have the correct element in the Command Log', () => {
-        let firstLog
+        // This test is a little strange since snapshots show what element
+        // is selected, but snapshots themselves don't give access to those
+        // elements. I had to make the implementation specific so that the `$el`
+        // is the `subject` when the log is added and the `$el` is the `value`
+        // when the log is changed. It would be better to extract the `$el` from
+        // each snapshot
         cy.on('log:added', (attrs, log) => {
           if (log.get('name') === 'pipe') {
-            cy.removeAllListeners('log:added')
+            expect(log.get('$el')).to.have.prop('tagName', 'BODY')
+          }
+        })
 
-            firstLog = log
+        cy.on('log:changed', (attrs, log) => {
+          if (log.get('name') === 'pipe') {
+            expect(log.get('$el')).to.have.attr('id', 'first')
           }
         })
 
         cy.get('body')
           .pipe(getFirst)
+      })
+
+      it('should have the correct consoleProps', () => {
+        let lastLog
+        cy.on('log:added', (attrs, log) => {
+          if (log.get('name') === 'pipe') {
+            lastLog = log
+          }
+        })
+        
+        cy.get('body')
+          .pipe(getFirst)
           .should(() => {
-            const consoleProps = firstLog.invoke('consoleProps')
+            const consoleProps = lastLog.invoke('consoleProps')
 
             expect(consoleProps).to.have.property('Elements', 1)
             expect(consoleProps.Yielded).to.have.id('first')
           })
       })
-
+      
       it('should wait to continue for each step and resolve the chain with the correct value', () => {
         cy.get('body')
           .pipe(getFirst)
@@ -187,8 +222,6 @@ describe('pipe()', () => {
         let lastLog
         cy.on('log:added', (attrs, log) => {
           if (log.get('name') === 'pipe') {
-            cy.removeAllListeners('log:added')
-
             lastLog = log
           }
         })

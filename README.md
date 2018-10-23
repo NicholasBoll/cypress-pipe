@@ -36,21 +36,21 @@ This library is a proof of concept, but should be stable. The proposal can be fo
 Synchronous functions can be retried, async functions cannot. Retrying allows implicit waiting which avoids confusing flaky failures where tests are dependant on timing.
 
 ```ts
-// okay
-// The `cy.*` command inside the function prevents automatic retries. The following will actually fail if `#first` isn't immediately available in the DOM
+// bad
+// The `cy.*` command inside the function prevents automatic retries. The following will actually fail if the text `'foobar'` isn't immediately available in the DOM
 const getFirst = $el => cy.wrap($el).find('#first')
 
 cy.get('body')
   .pipe(getFirst)
-  .should('have.id', 'first')
+  .should('contain', 'foobar')
 
-// best
-// synchronous resolution - pipe will retry `getFirst` until it returns a non-empty jQuery element list
+// good
+// synchronous resolution - pipe will retry `getFirst` until it returns a non-empty jQuery element list and contains the text 'foobar'
 const getFirst = $el => $el.find('#first')
 
 cy.get('body')
   .pipe(getFirst)
-  .should('have.id', 'first')
+  .should('contain', 'foobar')
 ```
 
 ### Use cy commands for actions
@@ -99,7 +99,7 @@ cy.wrap({ foo: 'bar' })
 If you have a function that returns another function (curried for extra input), name that.
 ```ts
 // Name the returned curried function
-const getProp = key => function getFoo(s) {
+const getProp = key => function getProp(s) {
   return s[key]
 }
 

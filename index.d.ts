@@ -8,8 +8,10 @@ declare namespace Cypress {
      * many times per second.
      * 
      * ```ts
+     * const getChildren = $el => $el.children()
+     * 
      * cy.get('body')
-     *   .pipe($body => $body.children())
+     *   .pipe(getChildren)
      *   .should('have.length', 3)
      * ```
      */
