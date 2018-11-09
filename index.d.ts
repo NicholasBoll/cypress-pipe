@@ -19,7 +19,7 @@ declare namespace Cypress {
       fn: (this: { [key: string]: any }, currentSubject: Subject) => Chainable<S>,
       options?: Partial<Cypress.Timeoutable & Cypress.Loggable>,
     ): Chainable<S>
-    pipe<S extends object | any[] | string | number | boolean>(
+    pipe<S extends object | any[] | string | number | boolean | undefined>(
       fn: (this: { [key: string]: any }, currentSubject: Subject) => S,
       options?: Partial<Cypress.Timeoutable & Cypress.Loggable>,
     ): Chainable<S>
