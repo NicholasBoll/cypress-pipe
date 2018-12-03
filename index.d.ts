@@ -1,3 +1,5 @@
+/// <reference types="cypress" />
+
 declare namespace Cypress {
   interface Chainable<Subject> {
     /**
@@ -17,11 +19,11 @@ declare namespace Cypress {
      */
     pipe<S>(
       fn: (this: { [key: string]: any }, currentSubject: Subject) => Chainable<S>,
-      options?: Partial<Cypress.Timeoutable & Cypress.Loggable>,
+      options?: Partial<Timeoutable & Loggable>,
     ): Chainable<S>
     pipe<S extends object | any[] | string | number | boolean | undefined>(
       fn: (this: { [key: string]: any }, currentSubject: Subject) => S,
-      options?: Partial<Cypress.Timeoutable & Cypress.Loggable>,
+      options?: Partial<Timeoutable & Loggable>,
     ): Chainable<S>
   }
 }
