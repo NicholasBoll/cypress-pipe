@@ -1,9 +1,10 @@
 /// <reference types="cypress" />
+
 const isJquery = obj =>
   !!(obj && obj.jquery && Cypress._.isFunction(obj.constructor))
 
 const getElements = $el => {
-  if (!$el && !els.length) {
+  if (!$el && !$el.length) {
     return
   }
 
