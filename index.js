@@ -31,10 +31,6 @@ Cypress.Commands.add('pipe', { prevSubject: true }, (subject, fn, options = { lo
     })
   }
 
-  Cypress._.defaults(options, {
-    timeout: 4000,
-  })
-
   const getConsoleProps = (value) => () => ({
     Command: 'pipe',
     Subject: subject,
