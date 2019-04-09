@@ -17,12 +17,16 @@ const getElements = $el => {
   }
 }
 
-Cypress.Commands.add('pipe', { prevSubject: true }, (subject, fn, options = { log: true }) => {
+Cypress.Commands.add('pipe', { prevSubject: true }, (subject, fn, options = { }) => {
 
   const getEl = (value) => isJquery(value) ? value : isJquery(subject) ? subject : undefined
 
   const now = performance.now()
   let isCy = false
+  
+  Cypress._.defaults(options, {
+    timeout: 4000,
+  })
 
   if (options.log) {
     options._log = Cypress.log({
