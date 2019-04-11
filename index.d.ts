@@ -18,7 +18,7 @@ declare namespace Cypress {
      * ```
      */
     pipe<S>(
-      fn: (this: { [key: string]: any }, currentSubject: Subject) => Chainable<S>,
+      fn: (this: { [key: string]: any }, currentSubject: Subject) => Chainable<S> | Promise<S>,
       options?: Partial<Timeoutable & Loggable>,
     ): Chainable<S>
     pipe<S extends object | any[] | string | number | boolean | undefined>(
