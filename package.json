@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "http-server . -p 3333",
-    "test": "concurrently --kill-others-on-fail 'npm run start' 'wait-on http://localhost:3333 && cypress run'"
+    "test": "concurrently -k 'npm run start' 'wait-on http://localhost:3333 && cypress run'"
   },
   "repository": {
     "type": "git",
