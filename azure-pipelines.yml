@@ -1,0 +1,20 @@
+resources:
+  containers:
+  - container: dev1
+    image: cypress/base:8
+jobs:
+- job: job_container
+  pool:
+    vmImage: 'ubuntu-16.04'
+  container: dev1
+  steps:
+  - script: printenv
+  - script: |
+      yarn install
+    displayName: 'install dependencies'
+  - script: |
+      yarn cypress verify
+    displayName: 'Cypress verify'
+  - script: |
+      yarn test
+    displayName: 'Run Cypress tests'
