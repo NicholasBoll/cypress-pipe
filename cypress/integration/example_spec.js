@@ -14,6 +14,7 @@ describe('pipe()', () => {
 
     it('should show the function name in the Command Log', (done) => {
       const getFoo = subject => subject.foo
+      const timeout = setTimeout(() => { done(new Error('Timed out waiting for log')) }, 1000)
       cy.on('log:added', (attrs, log) => {
         if (log.get('name') === 'pipe') {
           cy.removeAllListeners('log:added')
@@ -21,6 +22,7 @@ describe('pipe()', () => {
           expect(log.get('message')).to.eq('getFoo')
           expect(log.get('name')).to.eq('pipe')
           expect(log.invoke('consoleProps')).to.have.property('Command', 'pipe')
+          clearTimeout(timeout)
           done()
         }
       })
@@ -33,7 +35,7 @@ describe('pipe()', () => {
       const obj = { foo: 'bar' }
       setTimeout(() => { obj.foo = 'baz' }, delay)
       cy.wrap(obj)
-        .pipe(subject => subject.foo)
+      .pipe(subject => subject.foo)
         .should('equal', 'baz')
     })
 
@@ -146,6 +148,7 @@ describe('pipe()', () => {
 
     it('should show the function name in the Command Log', (done) => {
       const getFoo = subject => cy.wrap(subject.foo)
+      const timeout = setTimeout(() => { done(new Error('Timed out waiting for log')) }, 1000)
       cy.on('log:added', (attrs, log) => {
         if (log.get('name') === 'pipe') {
           cy.removeAllListeners('log:added')
@@ -153,6 +156,7 @@ describe('pipe()', () => {
           expect(log.get('message')).to.eq('getFoo')
           expect(log.get('name')).to.eq('pipe')
           expect(log.invoke('consoleProps')).to.have.property('Command', 'pipe')
+          clearTimeout(timeout)
           done()
         }
       })
