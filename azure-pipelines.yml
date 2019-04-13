@@ -1,24 +1,17 @@
-# run the same job on 2 CI machines in parallel
-# https://docs.microsoft.com/en-us/vsts/pipelines/process/phases
-phases:
-- phase: Test
-  queue: 'Hosted Linux Preview'
+resources:
+  containers:
+  - container: dev1
+    image: cypress/base:8
+jobs:
+- job: job_container
+  pool:
+    name: default
+  container: dev1
   steps:
-  - task: NodeTool@0
-    inputs:
-      versionSpec: '8.x'
-    displayName: 'Install Node.js'
-
-  # VSTS hosted Linux agents already have a LOT of dependencies preinstalled
-  # https://github.com/Microsoft/vsts-agent-docker
-  # so we don't have to install all recommended Cypress dependencies
-  # https://on.cypress.io/continuous-integration#Dependencies
-  - script: |
-      apt-get update && apt-get install -y libgconf-2-4
-    displayName: 'install dependencies'
+  - script: printenv
   - script: |
       yarn install
-    displayName: 'npm install and build'
+    displayName: 'install dependencies'
   - script: |
       yarn cypress verify
     displayName: 'Cypress verify'
