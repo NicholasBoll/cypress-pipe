@@ -25,6 +25,7 @@ Cypress.Commands.add('pipe', { prevSubject: true }, (subject, fn, options = { })
   let isCy = false
   
   Cypress._.defaults(options, {
+    log: true,
     timeout: 4000,
   })
 
