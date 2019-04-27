@@ -28,6 +28,31 @@ WRAP       {foo: bar}
 
 If the `pipe` was using a `then`, it would fail immediately and wouldn't show the `getFoo` functions anywhere in the Cypress Command Log.
 
+If you care even more about log output and you have more generic functions that curry other functions, you can use `loggable`. That sounds scary, but you might have a function like `getTodoByName` where the function takes the name of the Todo and returns a function that takes a container. For example:
+
+```ts
+import { loggable } from 'cypress-pipe'
+
+const getProp = loggable('getProp', prop => obj => obj[prop])
+// alternative
+const getProp = loggable(prop => function getProp(obj) { return obj[prop] })
+
+cy.wrap({ foo: 'bar' })
+  .pipe(getProp('foo'))
+  .should('equal', 'bar')
+```
+
+The `loggable` decorator function can either take a `name` as a string, or allow `.pipe` to get it from a named currried function.
+
+The Cypress Log will look like:
+
+```
+WRAP       {foo: bar}
+ - PIPE    getProp("foo")
+ - ASSERT  expected bar to equal bar
+```
+
+
 This library is a proof of concept, but should be stable. The proposal can be found here: https://github.com/cypress-io/cypress/issues/1548
 
 ## Best Practices

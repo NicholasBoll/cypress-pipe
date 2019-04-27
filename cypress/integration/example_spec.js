@@ -1,7 +1,40 @@
 /// <reference types="cypress" />
 /// <reference path="../../index.d.ts" />
 
+const { loggable } = require('../../loggable')
+
 const delay = 100 // delay of some retries. Make this larger if you want to see the UI during these times
+
+describe('loggable', () => {
+  context('when only a function is provided', () => {
+    it('should set __args to equal arguments passed in', () => {
+      const getProp = loggable(prop => obj => obj[prop])
+      const fn = getProp('foo', 1, false)
+      expect(fn.__args).to.deep.equal(['foo', 1, false])
+    })
+
+    it('should set displayName to the name of the function', () => {
+      const getFoo = loggable(function getFoo() {})
+      expect(getFoo.displayName).to.equal('getFoo')
+    })
+  })
+
+  context('when a name is provided', () => {
+    it('should set the displayName of the function', () => {
+      const getFoo = loggable('getFoo', () => 'foo')
+      console.log('getFoo', getFoo)
+      expect(getFoo.displayName).to.equal('getFoo')
+    })
+  })
+
+  context('when a curried function is provided', () => {
+    it('should set the displayName of the curried function', () => {
+      const getFoo = loggable('getFoo', prop => obj => obj[prop])
+      const fn = getFoo('foo')
+      expect(fn.displayName).to.equal('getFoo')
+    })
+  })
+})
 
 describe('pipe()', () => {
 
@@ -29,6 +62,26 @@ describe('pipe()', () => {
 
       cy.wrap({ foo: 'bar' })
         .pipe(getFoo)
+    })
+
+    it('should show arguments of loggable functions', (done) => {
+      const getProp = loggable('getProp', (prop) => (obj) => obj[prop])
+      const args = ['foo', 1, (foo) => foo, false, [1, 'foo'], { foo: 'bar' }]
+
+      cy.on('log:changed', (attrs, log) => {
+        if (log.get('name') === 'pipe') {
+          cy.removeAllListeners('log:changed')
+
+          expect(log.get('message')).to.eq('getProp("foo", 1, function, false, [1,"foo"], {"foo":"bar"})')
+          expect(log.invoke('consoleProps')).to.have.property('Arguments')
+          expect(log.invoke('consoleProps').Arguments).to.deep.equal(args)
+          done()
+        }
+      })
+
+      cy.wrap({ foo: 'bar' })
+        .pipe(getProp(...args))
+        .should('equal', 'bar')
     })
 
     it('should retry until assertion passes', () => {
