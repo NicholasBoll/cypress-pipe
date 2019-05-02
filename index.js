@@ -17,6 +17,19 @@ const getElements = $el => {
   }
 }
 
+/**
+ * Format the argument according to its type
+ * @param {any} arg 
+ */
+function formatArg (arg) {
+  switch (typeof arg) {
+    case 'function':
+      return arg.name || 'function'
+    default:
+      return JSON.stringify(arg)
+  }
+}
+
 Cypress.Commands.add('pipe', { prevSubject: true }, (subject, fn, options = { }) => {
 
   const getEl = (value) => isJquery(value) ? value : isJquery(subject) ? subject : undefined
@@ -31,7 +44,7 @@ Cypress.Commands.add('pipe', { prevSubject: true }, (subject, fn, options = { })
 
   if (options.log) {
     options._log = Cypress.log({
-      message: fn.name || undefined,
+      message: (fn.displayName || fn.name || undefined) + (fn.__args ? `(${fn.__args.map(formatArg).join(', ')})` : ''),
       $el: getEl(subject), // start the $el with the subject
     })
   }
@@ -39,8 +52,9 @@ Cypress.Commands.add('pipe', { prevSubject: true }, (subject, fn, options = { })
   const getConsoleProps = (value) => () => ({
     Command: 'pipe',
     Subject: subject,
-    Message: fn.name || undefined,
-    Function: fn.toString(),
+    Function: fn.displayName || fn.name || undefined,
+    Arguments: fn.__args || [],
+    Contents: fn.toString(),
     Yielded: isJquery(value) ? getElements(value) : value,
     Elements: isJquery(value) ? value.length : undefined,
     Duration: performance.now() - now,
