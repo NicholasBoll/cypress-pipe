@@ -22,7 +22,6 @@ describe('loggable', () => {
   context('when a name is provided', () => {
     it('should set the displayName of the function', () => {
       const getFoo = loggable('getFoo', () => 'foo')
-      console.log('getFoo', getFoo)
       expect(getFoo.displayName).to.equal('getFoo')
     })
   })
@@ -99,7 +98,7 @@ describe('pipe()', () => {
         .pipe(subject => subject.foo.bar)
         .should('equal', 'baz')
     })
-  
+
     it('should allow for a specified timeout', (done) => {
       const obj = { foo: 'bar' }
       setTimeout(() => { obj.foo = 'baz' }, delay)
@@ -110,7 +109,7 @@ describe('pipe()', () => {
           // we should not get here
           done(new Error('Failed to fail on timeout'))
         })
-      
+
       cy.on('fail', (err) => {
         expect(err.message).to.include('Timed out retrying')
         expect(err.message).to.include("expected 'bar' to equal 'baz'")
@@ -124,9 +123,9 @@ describe('pipe()', () => {
       const getText = $el => $el.text()
 
       beforeEach(() => {
-        cy.visit('/')
+        cy.visit('/cypress/fixtures/')
       })
-  
+
       it('should have the correct element in the Command Log', () => {
         let lastLog
 
@@ -150,7 +149,7 @@ describe('pipe()', () => {
             lastLog = log
           }
         })
-        
+
         cy.get('body')
           .pipe(getFirst)
           .should(() => {
@@ -167,6 +166,32 @@ describe('pipe()', () => {
           .pipe(getSecond) // Will resolve after a delay
           .pipe(getText)
           .should('equal', 'foobar')
+      })
+
+      it('should fail with the selector in the error message if element is not found', (done) => {
+        const assertMessage = error => {
+          expect(error.message).to.contain('#wontfind')
+          Cypress.off('fail', assertMessage)
+          done()
+        }
+        Cypress.on('fail', assertMessage)
+
+        const thisWillFail = $el => $el.find('#wontfind')
+        cy.get('body')
+          .pipe(thisWillFail, { timeout: 50 })
+      })
+
+      it('should fail with the selector in the error message if element is not found even if multiple traversals are used', (done) => {
+        const assertMessage = error => {
+          expect(error.message).to.contain('#wontfind')
+          Cypress.off('fail', assertMessage)
+          done()
+        }
+        Cypress.on('fail', assertMessage)
+
+        const thisWillFail = $el => $el.find('#first').find('#wontfind')
+        cy.get('body')
+          .pipe(thisWillFail, { timeout: 50 })
       })
 
       it('should create a snapshot', () => {
@@ -223,7 +248,7 @@ describe('pipe()', () => {
       const getText = $el => $el.text()
 
       beforeEach(() => {
-        cy.visit('/')
+        cy.visit('/cypress/fixtures/')
       })
 
       it('should have the correct element in the Command Log', () => {
@@ -256,7 +281,7 @@ describe('pipe()', () => {
             lastLog = log
           }
         })
-        
+
         cy.get('body')
           .pipe(getFirst)
           .should(() => {
@@ -266,7 +291,7 @@ describe('pipe()', () => {
             expect(consoleProps.Yielded).to.have.id('first')
           })
       })
-      
+
       it('should wait to continue for each step and resolve the chain with the correct value', () => {
         cy.get('body')
           .pipe(getFirst)

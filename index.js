@@ -3,6 +3,34 @@
 const isJquery = obj =>
   !!(obj && obj.jquery && Cypress._.isFunction(obj.constructor))
 
+const traversals = "find filter not children eq closest first last next nextAll nextUntil parent parents parentsUntil prev prevAll prevUntil siblings".split(" ")
+
+/**
+ * Patch the provided jQuery collection to add a `.selector` property to all traversal methods just
+ * like Cypress does in https://github.com/cypress-io/cypress/blob/13ebb9779d21238cae4da4b63cf6230da4a5341d/packages/driver/src/cy/commands/traversals.coffee#L50
+ * This patch allows a failure to log an error message that includes the last selector used when
+ * failing to find an element. A nice touch!
+ * @param {JQueryStatic} $el
+ */
+const patchJQueryForSelectorProperty = ($el) => {
+  traversals.forEach(traversal => {
+    const originalFn = $el.fn[traversal]
+
+    $el.fn[traversal] = function (...args) {
+      const ret = originalFn.apply(this, args)
+      ret.selector = Cypress._.chain(args)
+        .reject(Cypress._.isFunction)
+        .reject(Cypress._.isObject)
+        .reject(a => a == null)
+        .value()
+        .join(', ')
+      return ret
+    }
+  })
+}
+
+patchJQueryForSelectorProperty(Cypress.$)
+
 const getElements = $el => {
   if (!$el && !$el.length) {
     return
@@ -19,7 +47,7 @@ const getElements = $el => {
 
 /**
  * Format the argument according to its type
- * @param {any} arg 
+ * @param {any} arg
  */
 function formatArg (arg) {
   switch (typeof arg) {
@@ -32,11 +60,15 @@ function formatArg (arg) {
 
 Cypress.Commands.add('pipe', { prevSubject: true }, (subject, fn, options = { }) => {
 
+  // if (isJquery(subject)) {
+  //   patchJQueryForSelectorProperty(subject);
+  // }
+
   const getEl = (value) => isJquery(value) ? value : isJquery(subject) ? subject : undefined
 
   const now = performance.now()
   let isCy = false
-  
+
   Cypress._.defaults(options, {
     log: true,
     timeout: 4000,

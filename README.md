@@ -138,6 +138,24 @@ cy.wrap({ foo: 'bar' })
 //  - ASSERT  expected 'bar' to equal 'bar'
 ```
 
+Here's a screenshot of a failure using `cypress-pipe` and `loggable`:
+
+![cypress-pipe failure](./failure.png)
+
+The code that produced this was:
+
+```ts
+const getFirst = $el => $el.find('#first')
+const getSecond = loggable('getSecond', selector => $el => $el.find(selector))
+
+cy.get('body')
+  .pipe(getFirst)
+  .pipe(getSecond('#second1'))
+  .should('contain', 'foobar')
+```
+
+Pipe tries to add as much debugging information as possible.
+
 
 ## Installation
 ```
