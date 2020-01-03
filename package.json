@@ -4,7 +4,7 @@
   "description": "Create custom commands using plain-old functions",
   "main": "index.js",
   "scripts": {
-    "test": "cypress run'"
+    "test": "cypress run"
   },
   "repository": {
     "type": "git",
