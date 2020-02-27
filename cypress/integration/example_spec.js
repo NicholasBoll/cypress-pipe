@@ -1,7 +1,7 @@
 /// <reference types="cypress" />
 /// <reference path="../../index.d.ts" />
 
-const { loggable } = require('../../loggable')
+const { loggable } = require('../../')
 
 const delay = 100 // delay of some retries. Make this larger if you want to see the UI during these times
 

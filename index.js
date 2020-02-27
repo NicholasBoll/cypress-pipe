@@ -1,5 +1,9 @@
 /// <reference types="cypress" />
 
+const { loggable } = require('./loggable')
+
+module.exports = { loggable }
+
 const isJquery = obj =>
   !!(obj && obj.jquery && Cypress._.isFunction(obj.constructor))
 
