@@ -19,7 +19,9 @@
   ],
   "files": [
     "index.js",
-    "index.d.ts"
+    "index.d.ts",
+    "loggable.js",
+    "loggable.d.ts"
   ],
   "author": "Nicholas Boll",
   "license": "MIT",
