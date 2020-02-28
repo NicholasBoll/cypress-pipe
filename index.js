@@ -75,7 +75,7 @@ Cypress.Commands.add('pipe', { prevSubject: true }, (subject, fn, options = { })
 
   Cypress._.defaults(options, {
     log: true,
-    timeout: 4000,
+    timeout: Cypress.config('defaultCommandTimeout',
   })
 
   if (options.log) {

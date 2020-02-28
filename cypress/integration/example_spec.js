@@ -37,6 +37,44 @@ describe('loggable', () => {
 
 describe('pipe()', () => {
 
+  it('should respect defaultCommandTimeout timeout', (done) => {
+    // verifying timed out failure is faster than testing an extension of the 4000ms default timeout
+    Cypress.config('defaultCommandTimeout', delay)
+    const obj = { foo: 'bar' }
+
+    setTimeout(() => {
+      obj.foo = 'baz'
+    }, delay + 50)
+
+    cy.on('fail', (err) => {
+      expect(err.message).to.contain('Timed out retrying')
+      Cypress.config('defaultCommandTimeout', 4000) // reset default timeout
+      done()
+    })
+
+    cy.wrap(obj)
+      .pipe(obj => obj.foo)
+      .should('equal', 'baz')
+  })
+
+  it('should respect the timeout property passed in', (done) => {
+    // verifying timed out failure is faster than testing an extension of the 4000ms default timeout
+    const obj = { foo: 'bar' }
+
+    setTimeout(() => {
+      obj.foo = 'baz'
+    }, delay + 50)
+
+    cy.on('fail', (err) => {
+      expect(err.message).to.contain('Timed out retrying')
+      done()
+    })
+
+    cy.wrap(obj)
+      .pipe(obj => obj.foo, { timeout: delay })
+      .should('equal', 'baz')
+  })
+
   context('when passed a synchronous function', () => {
     it('should allow transforming a subject', () => {
       cy.wrap({ foo: 'bar' })
@@ -86,8 +124,9 @@ describe('pipe()', () => {
     it('should retry until assertion passes', () => {
       const obj = { foo: 'bar' }
       setTimeout(() => { obj.foo = 'baz' }, delay)
+
       cy.wrap(obj)
-      .pipe(subject => subject.foo)
+        .pipe(subject => subject.foo)
         .should('equal', 'baz')
     })
 
