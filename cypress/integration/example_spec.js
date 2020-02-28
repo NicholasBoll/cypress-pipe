@@ -8,7 +8,7 @@ const delay = 100 // delay of some retries. Make this larger if you want to see 
 describe('loggable', () => {
   context('when only a function is provided', () => {
     it('should set __args to equal arguments passed in', () => {
-      const getProp = loggable(prop => obj => obj[prop])
+      const getProp = loggable((prop, num, bool) => obj => obj[prop])
       const fn = getProp('foo', 1, false)
       expect(fn.__args).to.deep.equal(['foo', 1, false])
     })
@@ -157,8 +157,11 @@ describe('pipe()', () => {
     })
 
     context('when visiting a page', () => {
+      /** @param $el {JQuery} */
       const getFirst = $el => $el.find('#first')
+      /** @param $el {JQuery} */
       const getSecond = $el => $el.find('#second')
+      /** @param $el {JQuery} */
       const getText = $el => $el.text()
 
       beforeEach(() => {
@@ -252,6 +255,12 @@ describe('pipe()', () => {
               expect(lastLog.get('snapshots')).to.have.length(1)
             }
           })
+      })
+
+      it('should use the body tag if no previous subject was provided', () => {
+        cy.pipe(getFirst)
+          .pipe(getSecond)
+          .should('contain', 'foobar')
       })
     })
   })
