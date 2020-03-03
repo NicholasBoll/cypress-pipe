@@ -1,6 +1,6 @@
 {
   "name": "cypress-pipe",
-  "version": "1.6.4",
+  "version": "1.7.0",
   "description": "Create custom commands using plain-old functions",
   "main": "index.js",
   "scripts": {
