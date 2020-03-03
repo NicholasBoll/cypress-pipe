@@ -62,7 +62,12 @@ function formatArg (arg) {
   }
 }
 
-Cypress.Commands.add('pipe', { prevSubject: true }, (subject, fn, options = { }) => {
+Cypress.Commands.add('pipe', { prevSubject: 'optional' }, (subject, fn, options = { }) => {
+
+  // Support https://github.com/NicholasBoll/cypress-pipe/issues/22
+  if (!subject) {
+    subject = Cypress.$('body')
+  }
 
   // if (isJquery(subject)) {
   //   patchJQueryForSelectorProperty(subject);
