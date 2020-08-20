@@ -262,6 +262,14 @@ describe('pipe()', () => {
           .pipe(getSecond)
           .should('contain', 'foobar')
       })
+
+      it('should use the withinSubject if it is defined', () => {
+        cy.pipe(getFirst)
+          .within(() => {
+            cy.pipe($el => $el)
+              .should('have.attr', 'id', 'first')
+          })
+      })
     })
   })
 
