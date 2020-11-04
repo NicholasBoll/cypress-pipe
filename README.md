@@ -65,10 +65,6 @@ Synchronous functions can be retried, async functions cannot. Retrying allows im
 // The `cy.*` command inside the function prevents automatic retries. The following will actually fail if the text `'foobar'` isn't immediately available in the DOM
 const getFirst = $el => cy.wrap($el).find('#first')
 
-cy.get('body')
-  .pipe(getFirst)
-  .should('contain', 'foobar')
-
 // good
 // synchronous resolution - pipe will retry `getFirst` until it returns a non-empty jQuery element list and contains the text 'foobar'
 const getFirst = $el => $el.find('#first')
