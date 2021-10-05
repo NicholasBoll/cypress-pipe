@@ -223,6 +223,14 @@ describe('pipe()', () => {
           .pipe(thisWillFail, { timeout: 50 })
       })
 
+      it('should not fail with a missing selector when non-existance assertion is used', () => {
+
+        const thisWillFail = $el => $el.find('#wontfind')
+        cy.get('body')
+          .pipe(thisWillFail, { timeout: 50 })
+          .should('not.exist')
+      })
+
       it('should fail with the selector in the error message if element is not found even if multiple traversals are used', (done) => {
         const assertMessage = error => {
           expect(error.message).to.contain('#wontfind')
