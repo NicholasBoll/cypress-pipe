@@ -5,7 +5,7 @@ resources:
 jobs:
 - job: job_container
   pool:
-    vmImage: 'ubuntu-16.04'
+    vmImage: 'ubuntu-latest'
   container: dev1
   steps:
   - script: printenv
