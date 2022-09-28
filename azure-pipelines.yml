@@ -1,7 +1,7 @@
 resources:
   containers:
   - container: dev1
-    image: cypress/base:8
+    image: cypress/base:12
 jobs:
 - job: job_container
   pool:
