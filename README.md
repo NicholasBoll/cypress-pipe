@@ -158,7 +158,7 @@ Pipe tries to add as much debugging information as possible.
 npm install cypress-pipe -D
 ```
 
-Add the following to your `cypress/support/index` file:
+Add the following to your `cypress/support/commands.js` file:
 
 ```ts
 import 'cypress-pipe'

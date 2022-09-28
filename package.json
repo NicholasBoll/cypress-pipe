@@ -30,6 +30,6 @@
   },
   "homepage": "https://github.com/NicholasBoll/cypress-pipe#readme",
   "devDependencies": {
-    "cypress": "^4.0.2"
+    "cypress": "^10.0.0"
   }
 }
